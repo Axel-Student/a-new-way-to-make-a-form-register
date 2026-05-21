@@ -1,0 +1,16 @@
+{
+  "botTyping": {
+    "intro": "Hello welcome to the new registration form",
+    "question1": "First of all tell us how you want to sign up ?",
+    "question2": "What is your email ?",
+    "question3": "What is your password ?",
+    "question4": "can you confirm your password ?",
+    "question5": "What can you tell us about you ?",
+    "question6": "What is your phone number ?"
+  },
+  "botAnswering": {
+    "answer1": "Amazing !",
+    "answer2": "Great !",
+    "answer3": "Perfect !"
+  }
+}
