@@ -1,16 +1,25 @@
 {
   "botTyping": {
-    "intro": "Hello welcome to the new registration form",
-    "question1": "First of all tell us how you want to sign up ?",
-    "question2": "What is your email ?",
-    "question3": "What is your password ?",
-    "question4": "can you confirm your password ?",
-    "question5": "What can you tell us about you ?",
-    "question6": "What is your phone number ?"
+    "intro": "Hey! I'm going to walk you through registration — one step at a time.",
+    "question1": "Hi what is your name ?",
+    "question2": "First things first — how do you want to sign up?",
+    "question3": "What's your email address?",
+    "question4": "Choose a password — make it a good one.",
+    "question5": "Type your password again to confirm.",
+    "question6": "Tell us a bit about yourself.",
+    "question7": "Last one — what's your phone number?"
   },
   "botAnswering": {
-    "answer1": "Amazing !",
-    "answer2": "Great !",
-    "answer3": "Perfect !"
+    "answer1": "Nice.",
+    "answer2": "Got it.",
+    "answer3": "Perfect."
+  },
+  "botErrors": {
+    "emailInvalid": "Hmm, that doesn't look like a valid email — double-check and try again.",
+    "passwordTooShort": "Your password needs at least 8 characters. Make it stronger!",
+    "passwordMismatch": "Those passwords don't match — give it another shot.",
+    "phoneInvalid": "That doesn't look like a valid phone number. Try: +33 6 12 34 56 78",
+    "aboutTooShort": "Tell us a bit more — at least a few words.",
+    "fieldRequired": "Don't leave this blank — I need this one!"
   }
 }
