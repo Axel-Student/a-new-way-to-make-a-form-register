@@ -68,12 +68,6 @@ const QUESTIONS: Question[] = [
   },
 ];
 
-const ACKS = [
-  scenario.botAnswering.answer1,
-  scenario.botAnswering.answer2,
-  scenario.botAnswering.answer3,
-];
-
 type Msg = {
   id: number;
   from: "bot" | "user";
@@ -83,9 +77,57 @@ type Msg = {
 
 let idCounter = 0;
 const nextId = () => ++idCounter;
-const randAck = () => ACKS[Math.floor(Math.random() * ACKS.length)];
 
 const TYPING_DELAY_MS = 500;
+
+/* ── Replace {placeholders} in bot text with answers ── */
+function interpolate(text: string, vars: Record<string, string>): string {
+  return text.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? "");
+}
+
+/* ── Contextual reaction based on the question and the actual answer ── */
+function getAck(
+  q: Question,
+  answer: string,
+  allAnswers: Record<string, string>,
+): string {
+  const r = scenario.botReactions;
+  const name = allAnswers.name ?? "";
+
+  switch (q.key) {
+    case "name":
+      return interpolate(r.name, { name: answer });
+
+    case "signUp":
+      if (answer === "Email") return r["signUp.email"];
+      return interpolate(r["signUp.default"], { provider: answer });
+
+    case "email": {
+      const lower = answer.toLowerCase();
+      if (/@gmail\./.test(lower)) return r["email.gmail"];
+      if (/@proton\./.test(lower) || /@pm\.me/.test(lower)) return r["email.proton"];
+      if (/@(outlook|hotmail|live|msn)\./.test(lower)) return r["email.outlook"];
+      if (/@yahoo\./.test(lower)) return r["email.yahoo"];
+      return r["email.default"];
+    }
+
+    case "password": {
+      const s = pwdStrength(answer);
+      if (s.level === 3) return r["password.strong"];
+      if (s.level === 2) return r["password.okay"];
+      return r["password.weak"];
+    }
+
+    case "confirmPassword":
+      return r.confirmPassword;
+
+    case "about":
+      return answer.length < 30 ? r["about.short"] : r["about.long"];
+
+    case "phone":
+      return interpolate(r.phone, { name });
+  }
+}
 
 /* ── Password strength ── */
 function pwdStrength(pwd: string): {
@@ -215,16 +257,24 @@ function App() {
         username,
       },
     ]);
-    setAnswers((a) => ({ ...a, [askingQ.key]: text }));
+
+    /* Compute the updated answers snapshot now so reactions/templating see the new value */
+    const updatedAnswers = { ...answers, [askingQ.key]: text };
+    const nameForTemplating = updatedAnswers.name ?? "";
+    const ack = getAck(askingQ, text, updatedAnswers);
+
+    setAnswers(updatedAnswers);
     setInput("");
 
     if (currentQ < QUESTIONS.length - 1) {
       const next = currentQ + 1;
+      const nextText = interpolate(QUESTIONS[next].text, { name: nameForTemplating });
       setCurrentQ(next);
-      setPendingBots((p) => [...p, randAck(), QUESTIONS[next].text]);
+      setPendingBots((p) => [...p, ack, nextText]);
     } else {
       setDone(true);
-      setPendingBots((p) => [...p, randAck(), "Awesome — you're all set!"]);
+      const final = interpolate(scenario.botFinal, { name: nameForTemplating });
+      setPendingBots((p) => [...p, ack, final]);
     }
   }
 
@@ -283,7 +333,7 @@ function App() {
           m.from === "bot" ? (
             <BotMessage key={m.id} text={m.text} />
           ) : (
-            <UserAnswer key={m.id} text={m.text} />
+            <UserAnswer key={m.id} text={m.text} username={m.username} />
           ),
         )}
         {isTyping && <BotTyping />}
@@ -311,7 +361,7 @@ function App() {
                 lineHeight: 1,
               }}
             >
-              YOU'RE IN.
+              {answers.name ? `WELCOME, ${answers.name.toUpperCase()}.` : "YOU'RE IN."}
             </Text>
             <Text
               style={{
@@ -323,7 +373,7 @@ function App() {
                 opacity: 0.7,
               }}
             >
-              Account created — welcome aboard.
+              Account created — let's go.
             </Text>
           </Box>
         )}
